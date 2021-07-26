@@ -4,7 +4,12 @@ from rest_framework.response import Response
 from .models import Hero as HeroModel
 from .serializers import HeroSerializer
 
+hero_added = []
+
 # Create your views here.
+
+def Index(requets):
+    return render(request= requets, template_name='index.html', context={'text': 'hello world'})
 
 class AllHeros(APIView):
     def get(self, request):
@@ -15,6 +20,8 @@ class AllHeros(APIView):
         serializer = HeroSerializer(data=request.data)
         if serializer.is_valid():
             hero = serializer.save()
+            hero_added.append(serializer.data)
+            print(hero_added)
             return Response(data={"mess": "add successfully"}, status=200)
         else:
             return Response(data= serializer.errors, status=200)
