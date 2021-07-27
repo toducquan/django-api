@@ -16,9 +16,8 @@
         + '/ws/')
 
         socket.onmessage = function (e){
-            console.log('vào')
             var data= JSON.parse(e.data)
-            document.querySelector('#app').innerText = data.hero
+            console.log(e.data)
         }
     </script>
 </body>

@@ -3,8 +3,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Hero as HeroModel
 from .serializers import HeroSerializer
+from .consumers import WShero
+import websocket
 
-hero_added = []
+
 
 # Create your views here.
 
@@ -16,14 +18,12 @@ class AllHeros(APIView):
         heros = HeroModel.objects.all()
         serializer = HeroSerializer(heros, many = True)
         return Response(data=serializer.data, status= 200)
-    def post(self, request):
+    async def post(self, request):
         serializer = HeroSerializer(data=request.data)
         if serializer.is_valid():
             hero = serializer.save()
-            hero_added.append(serializer.data)
-            print(hero_added)
-            return Response(data={"mess": "add successfully"}, status=200)
-        else:
+            ws = websocket.WebSocket('ws://127.0.0.1:8000/ws/')
+            ws.send(serializer.data)
             return Response(data= serializer.errors, status=200)
 
 
