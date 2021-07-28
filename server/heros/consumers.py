@@ -1,28 +1,21 @@
 from channels.generic.websocket import WebsocketConsumer
 from channels.generic.websocket import AsyncWebsocketConsumer
-
+from asgiref.sync import async_to_sync
 
 class WShero(AsyncWebsocketConsumer):
-    async def connect(self):
-        self.group_name='tableData'
-        await self.channel_layer.group_add(
-            self.group_name,
-            self.channel_name
-        )
+    def connect(self):
+        async_to_sync(self.channel_layer.group_add)("chat", self.channel_name)
 
-        await self.accept()
-
-    async def disconnect(self,close_code):
-        pass
-
-    async def receive(self,text_data):
-        await self.channel_layer.group_send(
-            self.group_name,
+    def disconnect(self, close_code):
+        async_to_sync(self.channel_layer.group_discard)("chat", self.channel_name)
+    def receive(self, text_data):
+        async_to_sync(self.channel_layer.group_send)(
+            "chat",
             {
-                'type':'randomFunction',
-                'value':text_data,
-            }
+                "type": "chat.message",
+                "text": text_data,
+            },
         )
 
-    async def randomFunction(self,event):
-        await self.send(event['value'])
+    def chat_message(self, event):
+        self.send(text_data=event["text"])

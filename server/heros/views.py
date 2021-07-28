@@ -4,8 +4,8 @@ from rest_framework.response import Response
 from .models import Hero as HeroModel
 from .serializers import HeroSerializer
 from .consumers import WShero
-import websocket
-
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 
 # Create your views here.
@@ -22,8 +22,8 @@ class AllHeros(APIView):
         serializer = HeroSerializer(data=request.data)
         if serializer.is_valid():
             hero = serializer.save()
-            ws = websocket.WebSocket('ws://127.0.0.1:8000/ws/')
-            ws.send(serializer.data)
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(serializer.data, {"type": "chat.force_disconnect"})
             return Response(data= serializer.errors, status=200)
 
 
